@@ -102,7 +102,7 @@ int indiRoad = 0;
 //int indiPelota=0;
 int initfondo;
 bool KEYS[256];
-//int increfondo = 0;    //que incremente el valor del pixel 
+int increTrees = 0;    //que incremente el valor del pixel 
 int contadorsh = 10;
 int coloresdif = 0;
 bool mirror;
@@ -128,7 +128,7 @@ void DibujaObstacleRock(int* buffer, int* obstaclerock, DIMENSION dmn6, POSITION
 void DibujaRewardCoin(int* buffer, int* rewardcoin, DIMENSION dmn7, POSITION pos7);
 void DibujaPoints(int* buffer, int* points, DIMENSION dmn8, POSITION pos8);
 void DibujaFinish(int* buffer, int* finish, DIMENSION dmn9, POSITION pos9);
-void DibujaTrees(int* buffer, int* trees, DIMENSION dmn10, POSITION pos10);
+void DibujaTrees(int* buffer, int* trees, DIMENSION dmn10, POSITION pos10, int incremento);
 void DibujaMenuPrincipal(int *buffer, int * menuprincipal, DIMENSION dmn11, POSITION pos11);
 //void DibujaPelota(int *buffer, int *pelota, DIMENSION dmn12, POSITION pos12);
 
@@ -272,12 +272,17 @@ void Init()
 	scale = scale >= 3 ? 1 : scale;
 	//initfondo = 0;
 
-	posObstacleCarLeft.X = 10;
-	posObstacleCarLeft.Y = 10;
+	posObstacleCarLeft.X = 100;
+	posObstacleCarLeft.Y = 200;
 
 	posRoad.X = 150;
 	posRoad.Y = 0;
 
+	posFinish.X = 172;
+	posFinish.Y = 0;
+
+	posMenuPrincipal.X = 120;
+	posMenuPrincipal.Y = 0;
 	//posPel.X = 20;
 	//posPel.Y = 50;
 
@@ -316,7 +321,7 @@ void MainRender(HWND hWnd)
 	DibujaFondo(ptrBuffer, (int*)ptrBack, dmnBack /*increfondo*/);   //recibe lo de incremento
 	DibujaRoad(ptrBuffer, (int*)ptrRoad, dmnRoad, posRoad);
 	DibujaFinish(ptrBuffer, (int*)ptrFinish, dmnFinish, posFinish);
-	DibujaTrees(ptrBuffer, (int*)ptrTrees, dmnTrees, posTrees);
+	DibujaTrees(ptrBuffer, (int*)ptrTrees, dmnTrees, posTrees, increTrees);
 	DibujaPlayerCar(ptrBuffer, (int*)ptrPlayerCar, dmnPlayerCar, posPlayerCar);
 	DibujaObstacleCarLeft(ptrBuffer, (int*)ptrObstacleCarLeft, dmnObstacleCarLeft, posObstacleCarLeft);
 	DibujaObstacleCarRight(ptrBuffer, (int*)ptrObstacleCarRight, dmnObstacleCarRight, posObstacleCarRight);
@@ -359,16 +364,16 @@ void KeysEvents()
 		mirror = FALSE;
 		indiPlayerCar++;
 		indiPlayerCar = indiPlayerCar >= 4 ? 0 : indiPlayerCar;
-		if (posPlayerCar.X < 590)   //para que tope en mi ventana de 800 del lado derecho
+		if (posPlayerCar.X < 500)   //para que tope en mi ventana de 800 del lado derecho
 		{
 			posPlayerCar.X += 10;
 		}
 		else
 		{
-			//if (increfondo < 590)  //para que tope en mi imagen 2048
-			//{
-			//	increfondo += 10;  //velocidad en que avanza
-			//}
+			if (increTrees < 590)  //para que tope en mi imagen 2048
+			{
+				increTrees += 10;  //velocidad en que avanza
+			}
 		}
 	}
 	
@@ -382,10 +387,10 @@ void KeysEvents()
 		}
 		else
 		{
-			//if (increfondo > 10)  //para que tope en mi imagen 2048
-			//{
-			//	increfondo -= 10;  //velocidad que se regresa
-			//}
+			if (increTrees > 10)  //para que tope en mi imagen 2048
+			{
+				increTrees -= 10;  //velocidad que se regresa
+			}
 		}
 	}
 	if (KEYS[input.Space]){
@@ -429,8 +434,10 @@ void KeysEvents()
 	indiRewardCoin++;
 	indiRewardCoin = indiRewardCoin >= 4 ? 0 : indiRewardCoin;
 
-	indiPoints++;
+
+	indiPoints++;		
 	indiPoints = indiPoints >= 10 ? 0 : indiPoints;
+
 
 	indiMenuPrincipal++;
 	indiMenuPrincipal = indiMenuPrincipal >= 6 ? 0 : indiMenuPrincipal;
@@ -579,8 +586,7 @@ void DibujaFondo(int * buffer, int * imagen, DIMENSION dmn/* int incremento*/) {
 	}
 }
 
-void DibujaRoad(int* buffer, int* road, DIMENSION dmn, POSITION pos)
-{
+void DibujaRoad(int* buffer, int* road, DIMENSION dmn, POSITION pos){
 	int w = dmn.ANCHO;
 	int h = dmn.ALTO;
 	int x = posRoad.X;
@@ -719,8 +725,7 @@ void DibujaRoad(int* buffer, int* road, DIMENSION dmn, POSITION pos)
 	//}
 }
 
-void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos)
-{
+void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos){
 	int w = dmn.ANCHO;
 	int h = dmn.ALTO;
 	int x = posPlayerCar.X;
@@ -876,39 +881,618 @@ void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos)
 }
 
 void DibujaObstacleCarLeft(int* buffer, int* obstaclecarleft, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posObstacleCarLeft.X;
+	int y = posObstacleCarLeft.Y;
 
+	__asm {
+		cld
+
+		mov esi, obstaclecarleft
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 6000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 6000
+
+
+		mov eax, 35       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiObstacleCarLeft
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 35
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 35
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 35
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaObstacleCarRight(int* buffer, int* obstaclecarright, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posObstacleCarRight.X;
+	int y = posObstacleCarRight.Y;
 
+	__asm {
+		cld
+
+		mov esi, obstaclecarright
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 9000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 9000
+
+
+		mov eax, 35       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiObstacleCarRight
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 35
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 35
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 35
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaObstacleCarStatic(int* buffer, int* obstaclecarstatic, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posObstacleCarStatic.X;
+	int y = posObstacleCarStatic.Y;
 
+	__asm {
+		cld
+
+		mov esi, obstaclecarstatic
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 7000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 7000
+
+
+		mov eax, 35       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiObstacleCarStatic
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 35
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 35
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 35
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaObstacleRock(int* buffer, int* obstaclerock, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posObstacleRock.X;
+	int y = posObstacleRock.Y;
 
+	__asm {
+		cld
+
+		mov esi, obstaclerock
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 5000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 5000
+
+
+		mov eax, 60       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiObstacleRock
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 60
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 60
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 60
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaRewardCoin(int* buffer, int* rewardcoin, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posRewardCoin.X;
+	int y = posRewardCoin.Y;
 
+	__asm {
+		cld
+
+		mov esi, rewardcoin
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 4000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 4000
+
+
+		mov eax, 50       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiRewardCoin
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 50
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 50
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 50
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaPoints(int* buffer, int* points, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posPoints.X;
+	int y = posPoints.Y;
 
+	__asm {
+		cld
+
+		mov esi, points
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 4500
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 4500
+
+
+		mov eax, 30       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiPoints
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 30
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 30
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 30
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 void DibujaFinish(int* buffer, int* finish, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posFinish.X;
+	int y = posFinish.Y;
 
+	__asm {
+		cld
+
+		mov esi, finish
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 0
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 0
+
+
+		mov eax, 205       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		//mul  indiFinish
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 205
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 205
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 205
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
-void DibujaTrees(int* buffer, int* trees, DIMENSION dmn, POSITION pos) {
+void DibujaTrees(int* buffer, int* trees, DIMENSION dmn, POSITION pos, int incremento) {
+	//int w = dmn.ANCHO;
+	//int h = dmn.ALTO;
+	//int x = posTrees.X;
+	//int y = posTrees.Y;
 
+	//__asm {
+
+	//	cld
+	//	mov esi, trees
+	//	mov edi, buffer
+
+	//	mov ecx, ALTO_VENTANA
+
+	//	mov eax, incremento   //mi parametro para incrementar los pixeles, lo mando a eax
+	//	mul BPP               //multiplico por los bytes
+	//	add esi, eax          //se lo agrego a mi imagen para que se recorra
+
+	//	PonerA :
+	//	push ecx  //el alto lo pongo al inicio de mi linea
+	//		mov ecx, ANCHO_VENTANA //recorre el ancho
+
+	//		PonerL :
+	//	mov eax, [esi]     //mi imagen la paso a eax
+	//		mov[edi], eax      //eax lo pongo en mi ventana  (paso mi imagen a la ventana)
+	//		add edi, BPP                     //incremento mi pixel 4 bytes
+	//		add esi, BPP
+	//		loop PonerL
+	//		mov eax, 110                    //ancho de mi imagen
+	//		mul BPP                          //multiplico por 4 bytes
+	//		add esi, eax                     //incremento para que me pase a la linea de abajo
+	//		mov eax, ANCHO_VENTANA
+	//		mul BPP
+	//		sub esi, eax                     //resto para posicionarlo al principio de mi linea
+	//		pop ecx   //para sacar el alto y restarle uno
+	//		loop PonerA
+	//}
 }
 
 void DibujaMenuPrincipal(int* buffer, int* menuprincipal, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posMenuPrincipal.X;
+	int y = posMenuPrincipal.Y;
 
+	__asm {
+		cld
+
+		mov esi, menuprincipal
+		mov edi, buffer
+
+		//posicionar mi sprite		
+		mov eax, y
+		mov ebx, 50000
+		mul ebx
+		add edi, eax
+
+		mov eax, x
+		mul BPP
+		add edi, eax
+
+		add edi, 300000
+
+
+		mov eax, 310       //porque es la cantidad de pixeles de cada cuadrito
+		mul BPP
+		mul  indiMenuPrincipal
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h    //asigno mi altura a ecx
+
+		repetir :
+		push ecx     //guardo en mi pila ecx
+			mov ecx, 310
+
+			//PARA QUITAR EL FONDO ROJO
+			muestra :
+			mov eax, [esi]         //mi imagen la paso a eax
+			cmp eax, 0FFFF2BD8h    //comparo lo rojo 
+			je color1   //si es igual salta a color1
+			/*or eax, coloresdif*/
+			mov[edi], eax
+			color1 :
+		add esi, BPP   //incrementa y pasa el pixel rojo
+			add edi, BPP
+			loop muestra
+
+			//suma el total para luego restar y posicionarlo en la linea de abajo         
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			mov eax, 310
+			mul BPP
+			sub edi, eax
+
+			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, 310
+			mul BPP
+			sub esi, eax
+
+			pop ecx
+			loop repetir
+	}
 }
 
 //void DibujaPelota(int * buffer, int * pelota, DIMENSION dmn3, POSITION pos3)
