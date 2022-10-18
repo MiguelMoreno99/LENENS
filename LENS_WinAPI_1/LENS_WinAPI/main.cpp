@@ -10,31 +10,31 @@
 using namespace Gdiplus;
 
 //Variables constantes
-/* Variable constante para calcular el ancho de la ventana */
+ //Variable constante para calcular el ancho de la ventana 
 const int ANCHO_VENTANA = 600;
 
-/* Variable constante para calcular el alto de la ventana */
+ //Variable constante para calcular el alto de la ventana 
 const int ALTO_VENTANA = 600;
 
-/* Variable constante que define la cantidad de bytes por pixel, usada en las operaciones de desplegar sprites/imagenes en pantalla */
+ //Variable constante que define la cantidad de bytes por pixel, usada en las operaciones de desplegar sprites/imagenes en pantalla 
 const int BPP = 4;
 
 /* Variable constante que define el intervalo del contador o timer en milisegundos, 
 	con cada TICK del contador se ejecuta el codigo dentro del case WM_TIMER en la funcion WndProc */
 const int TICK = 100;
 
-/* Variables constantes de los colores primarios de un pixel de 32 bits */
+ //Variables constantes de los colores primarios de un pixel de 32 bits 
 const unsigned int BLUE = 0xFF0000FF;
 const unsigned int GREEN = 0xFF00FF00;
 const unsigned int RED = 0xFFFF0000;
 
-/* Estructura con las coordenadas de los sprites en pantalla en un plano 2D */
+ //Estructura con las coordenadas de los sprites en pantalla en un plano 2D 
 struct POSITION {
 	int X;
 	int Y;
 };
 
-/* Estructura con las dimensiones de los sprites a cargar y desplegar en pantalla */
+ //Estructura con las dimensiones de los sprites a cargar y desplegar en pantalla 
 struct DIMENSION {
 	int ANCHO;
 	int ALTO;
@@ -44,7 +44,7 @@ struct DIMENSION {
 	Se tiene un objeto o variable del tipo de esta estructura, llamado 'input' 
 	que sera para acceder a cada uno de las elementos de la enumeracion; ejemplo:
 	input.A para la tecla 'A'.*/
-/* declaracion del objeto de la estructura Input */
+ //declaracion del objeto de la estructura Input 
 struct Input
 {
 	enum Keys
@@ -91,13 +91,19 @@ POSITION posRoad;
 POSITION posMenuPrincipal;
 //POSITION posPel;
 int indiPlayerCar = 0;
+int indiObstacleCarLeft = 0;
+int indiObstacleCarRight = 0;
+int indiObstacleCarStatic = 0;
+int indiObstacleRock = 0;
+int indiRewardCoin = 0;
+int indiPoints = 0;
+int indiMenuPrincipal = 0;
 int indiRoad = 0;
 //int indiPelota=0;
 int initfondo;
 bool KEYS[256];
 //int increfondo = 0;    //que incremente el valor del pixel 
 int contadorsh = 10;
-
 int coloresdif = 0;
 bool mirror;
 //bool loboD=TRUE;
@@ -114,13 +120,19 @@ unsigned char * CargaImagen(WCHAR rutaImagen[], DIMENSION * dmn);
 POSITION setPosition(int x, int y);
 void DibujaFondo(int *buffer, int *imagen, DIMENSION dmn /*int incremento*/);
 void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn1, POSITION pos1);
-void DibujaRoad(int *buffer, int *road, DIMENSION dmn2, POSITION pos2);
-//void DibujaPelota(int *buffer, int *pelota, DIMENSION dmn3, POSITION pos3);
+void DibujaRoad(int* buffer, int* road, DIMENSION dmn2, POSITION pos2);
+void DibujaObstacleCarLeft(int* buffer, int* obstaclecarleft, DIMENSION dmn3, POSITION pos3);
+void DibujaObstacleCarRight(int* buffer, int* obstaclecarright, DIMENSION dmn4, POSITION pos4);
+void DibujaObstacleCarStatic(int* buffer, int* obstaclecarstatic, DIMENSION dmn5, POSITION pos5);
+void DibujaObstacleRock(int* buffer, int* obstaclerock, DIMENSION dmn6, POSITION pos6);
+void DibujaRewardCoin(int* buffer, int* rewardcoin, DIMENSION dmn7, POSITION pos7);
+void DibujaPoints(int* buffer, int* points, DIMENSION dmn8, POSITION pos8);
+void DibujaFinish(int* buffer, int* finish, DIMENSION dmn9, POSITION pos9);
+void DibujaTrees(int* buffer, int* trees, DIMENSION dmn10, POSITION pos10);
+void DibujaMenuPrincipal(int *buffer, int * menuprincipal, DIMENSION dmn11, POSITION pos11);
+//void DibujaPelota(int *buffer, int *pelota, DIMENSION dmn12, POSITION pos12);
 
-int WINAPI wWinMain(HINSTANCE hInstance, 
-					 HINSTANCE hPrevInstance, 
-					 PWSTR pCmdLine, 
-					 int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	WNDCLASSEX wc;									// Windows Class Structure
 	HWND hWnd;
@@ -192,8 +204,7 @@ int WINAPI wWinMain(HINSTANCE hInstance,
 	return(int)msg.wParam;
 }
 
-/* Funcion tipo Callback para el manejo de los eventos de la ventana. 
-	*/
+ //Funcion tipo Callback para el manejo de los eventos de la ventana. 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)									// Check For Windows Messages
@@ -252,15 +263,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-/* Funcion usada para la inicializacion de variables y reserva de espacio en memoria.
-	*/
-void Init() 
+ //Funcion usada para la inicializacion de variables y reserva de espacio en memoria.
+void Init()
 {
 	posPlayerCar.X = 200;
 	posPlayerCar.Y = 300;
 	scale++;
 	scale = scale >= 3 ? 1 : scale;
-	/*initfondo = 0;*/
+	//initfondo = 0;
+
+	posObstacleCarLeft.X = 10;
+	posObstacleCarLeft.Y = 10;
 
 	posRoad.X = 150;
 	posRoad.Y = 0;
@@ -268,7 +281,7 @@ void Init()
 	//posPel.X = 20;
 	//posPel.Y = 50;
 
-	for(int i = 0; i < 256; i++)
+	for (int i = 0; i < 256; i++)
 	{
 		KEYS[i] = false;
 	}
@@ -280,23 +293,38 @@ void Init()
 	//y en la variable dmnBack de tipo DIMENSION* estan los valores de ANCHO y ALTO de la imagen.
 	ptrBack = CargaImagen(TEXT("Fondo.png"), &dmnBack); //puntero a la imagen
 	ptrPlayerCar = CargaImagen(TEXT("PlayerCar.png"), &dmnPlayerCar);   //puntero a mi personaje sprite
+	ptrObstacleCarLeft = CargaImagen(TEXT("ObstacleCarLeft.png"), &dmnObstacleCarLeft);
+	ptrObstacleCarRight = CargaImagen(TEXT("ObstacleCarRight.png"), &dmnObstacleCarRight);
+	ptrObstacleCarStatic = CargaImagen(TEXT("ObstacleCarStatic.png"), &dmnObstacleCarStatic);
+	ptrObstacleRock = CargaImagen(TEXT("ObstacleRock.png"), &dmnObstacleRock);
+	ptrRewardCoin = CargaImagen(TEXT("RewardCoin.png"), &dmnRewardCoin);
+	ptrPoints = CargaImagen(TEXT("Points.png"), &dmnPoints);
+	ptrFinish = CargaImagen(TEXT("Finish.png"), &dmnFinish);
+	ptrTrees= CargaImagen(TEXT("Trees.png"), &dmnTrees);
+	ptrMenuPrincipal = CargaImagen(TEXT("MenuPrincipal.png"), &dmnMenuPrincipal);
 	ptrRoad = CargaImagen(TEXT("Road.png"), &dmnRoad);
 	//ptrpelota = CargaImagen(TEXT("pelotita.png"),&dmnPelota);
 }
 
-/* Funcion principal. Encargada de hacer el redibujado en pantalla cada intervalo (o "tick") del timer que se haya creado.
-	@param hWnd. Manejador de la ventana.
-	*/
+ //Funcion principal. Encargada de hacer el redibujado en pantalla cada intervalo (o "tick") del timer que se haya creado.
+	//@param hWnd. Manejador de la ventana.
+	//
 void MainRender(HWND hWnd) 
 {
 	KeysEvents();
 
 	DibujaFondo(ptrBuffer, (int*)ptrBack, dmnBack /*increfondo*/);   //recibe lo de incremento
-
 	DibujaRoad(ptrBuffer, (int*)ptrRoad, dmnRoad, posRoad);
-
+	DibujaFinish(ptrBuffer, (int*)ptrFinish, dmnFinish, posFinish);
+	DibujaTrees(ptrBuffer, (int*)ptrTrees, dmnTrees, posTrees);
 	DibujaPlayerCar(ptrBuffer, (int*)ptrPlayerCar, dmnPlayerCar, posPlayerCar);
-
+	DibujaObstacleCarLeft(ptrBuffer, (int*)ptrObstacleCarLeft, dmnObstacleCarLeft, posObstacleCarLeft);
+	DibujaObstacleCarRight(ptrBuffer, (int*)ptrObstacleCarRight, dmnObstacleCarRight, posObstacleCarRight);
+	DibujaObstacleCarStatic(ptrBuffer, (int*)ptrObstacleCarStatic, dmnObstacleCarStatic, posObstacleCarStatic);
+	DibujaObstacleRock(ptrBuffer, (int*)ptrObstacleRock, dmnObstacleRock, posObstacleRock);
+	DibujaRewardCoin(ptrBuffer, (int*)ptrRewardCoin, dmnRewardCoin, posRewardCoin);
+	DibujaPoints(ptrBuffer, (int*)ptrPoints, dmnPoints, posPoints);
+	DibujaMenuPrincipal(ptrBuffer, (int*)ptrMenuPrincipal, dmnMenuPrincipal, posMenuPrincipal);
 	//DibujaPelota(ptrBuffer, (int*)ptrpelota, dmnPelota, posPel);
 
 	//Funciones que deberan estar el final de la funcion de Render.
@@ -304,10 +332,10 @@ void MainRender(HWND hWnd)
 	UpdateWindow(hWnd);
 }
 
-/* Funcion que regresa la posicion del sprite en pantalla.
-	@param x. Coordenada X en la ventana.
-	@param y. Coordenada Y en la ventana.
-	*/
+ //Funcion que regresa la posicion del sprite en pantalla.
+	//@param x. Coordenada X en la ventana.
+	//@param y. Coordenada Y en la ventana.
+	//
 POSITION setPosition(int x, int y) {
 	POSITION p;
 	p.X = x;
@@ -315,8 +343,7 @@ POSITION setPosition(int x, int y) {
 	return p;
 }
 
-/* Funcion para manejar eventos del teclado dependiendo de la(s) tecla(s) que se haya(n) presionado.
-	*/
+ //Funcion para manejar eventos del teclado dependiendo de la(s) tecla(s) que se haya(n) presionado.
 void KeysEvents() 
 {
 	if(KEYS[input.W] || KEYS[input.Up]) {
@@ -362,10 +389,10 @@ void KeysEvents()
 		}
 	}
 	if (KEYS[input.Space]){
-		/*indiPelota++;
-		if (indiPelota > 3) {
-			indiPelota = 0;
-		}*/
+		//indiPelota++;
+		//if (indiPelota > 3) {
+		//	indiPelota = 0;
+		//}
 	}
 	if (KEYS[input.R])
 	{
@@ -386,6 +413,28 @@ void KeysEvents()
 
 	indiRoad++;
 	indiRoad = indiRoad >= 2 ? 0 : indiRoad;
+
+	indiObstacleCarLeft++;
+	indiObstacleCarLeft = indiObstacleCarLeft >= 5 ? 0 : indiObstacleCarLeft;
+
+	indiObstacleCarRight++;
+	indiObstacleCarRight = indiObstacleCarRight >= 5 ? 0 : indiObstacleCarRight;
+
+	indiObstacleCarStatic++;
+	indiObstacleCarStatic = indiObstacleCarStatic >= 4 ? 0 : indiObstacleCarStatic;
+
+	indiObstacleRock++;
+	indiObstacleRock = indiObstacleRock >= 3 ? 0 : indiObstacleRock;
+
+	indiRewardCoin++;
+	indiRewardCoin = indiRewardCoin >= 4 ? 0 : indiRewardCoin;
+
+	indiPoints++;
+	indiPoints = indiPoints >= 10 ? 0 : indiPoints;
+
+	indiMenuPrincipal++;
+	indiMenuPrincipal = indiMenuPrincipal >= 6 ? 0 : indiMenuPrincipal;
+
 	//if (loboD==TRUE) {
 	//	lobomirror = FALSE;
 	//	posLob.X += 10;
@@ -407,10 +456,10 @@ void KeysEvents()
 	//}
 }
 
-/* Funcion para cargar imagenes y obtener un puntero al area de memoria reservada para la misma.
-	@param rutaImagen.			Nombre o ruta de la imagen a cargar en memoria.
-	@return unsigned char *.	Direccion base de la imagen.
-	*/
+ //Funcion para cargar imagenes y obtener un puntero al area de memoria reservada para la misma.
+	//@param rutaImagen.			Nombre o ruta de la imagen a cargar en memoria.
+	//@return unsigned char *.	Direccion base de la imagen.
+	//
 unsigned char * CargaImagen(WCHAR rutaImagen[], DIMENSION * dmn)
 {
 	unsigned char * ptrImagen;
@@ -761,7 +810,7 @@ void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos)
 
 				//posicionar mi sprite		
 				mov eax, y
-				mov ebx, 0
+				mov ebx, 3000
 				mul ebx
 				add edi, eax
 
@@ -769,7 +818,7 @@ void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos)
 				mul BPP
 				add edi, eax
 
-				add edi, 0
+				add edi, 5000
 
 
 				mov eax, 35   //porque es la cantidad de pixeles de cada cuadrito
@@ -826,7 +875,41 @@ void DibujaPlayerCar(int *buffer, int *playercar, DIMENSION dmn, POSITION pos)
 	
 }
 
+void DibujaObstacleCarLeft(int* buffer, int* obstaclecarleft, DIMENSION dmn, POSITION pos) {
 
+}
+
+void DibujaObstacleCarRight(int* buffer, int* obstaclecarright, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaObstacleCarStatic(int* buffer, int* obstaclecarstatic, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaObstacleRock(int* buffer, int* obstaclerock, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaRewardCoin(int* buffer, int* rewardcoin, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaPoints(int* buffer, int* points, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaFinish(int* buffer, int* finish, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaTrees(int* buffer, int* trees, DIMENSION dmn, POSITION pos) {
+
+}
+
+void DibujaMenuPrincipal(int* buffer, int* menuprincipal, DIMENSION dmn, POSITION pos) {
+
+}
 
 //void DibujaPelota(int * buffer, int * pelota, DIMENSION dmn3, POSITION pos3)
 //{
