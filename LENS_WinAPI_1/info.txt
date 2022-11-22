@@ -1,0 +1,5 @@
+1000 y 740 = Primer Carril
+
+1000 y 1000 = Segundo Carril  (260 cada carril)
+
+1000 y 1260 = Tercer Carril

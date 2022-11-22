@@ -1,3 +1,4 @@
-﻿  main.cpp
+﻿  CPrincipal.cpp
   C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\dinput.h: DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800
+D:\ARCHIVO_PROYECTO_LENENS\LENS_WinAPI_1\LENS_WinAPI\CPrincipal.cpp(139,12): warning C4244: 'argumento': conversión de 'time_t' a 'unsigned int'; posible pérdida de datos
   LENS_WinAPI.vcxproj -> D:\ARCHIVO_PROYECTO_LENENS\LENS_WinAPI_1\Debug\LENS_WinAPI.exe

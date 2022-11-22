@@ -77,7 +77,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="CPrincipal.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CEnsamblador.h" />
+    <ClInclude Include="CPlusPlus.h" />
+    <ClInclude Include="CStructVarConst.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
